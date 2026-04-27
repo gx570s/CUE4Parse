@@ -31,7 +31,6 @@ namespace CUE4Parse.UE4.Versions
             GAME_TrainSimWorld2020 = GAME_UE4_16 + 2,
         GAME_UE4_17 = GameUtils.GameUe4Base + 17 << 4,
             GAME_LifeIsStrange2 = GAME_UE4_17 + 1,
-            GAME_AWayOut = GAME_UE4_17 + 2,
         GAME_UE4_18 = GameUtils.GameUe4Base + 18 << 4,
             GAME_KingdomHearts3 = GAME_UE4_18 + 1,
             GAME_FinalFantasy7Remake = GAME_UE4_18 + 2,
@@ -48,7 +47,6 @@ namespace CUE4Parse.UE4.Versions
         GAME_UE4_24 = GameUtils.GameUe4Base + 24 << 4,
         GAME_UE4_25 = GameUtils.GameUe4Base + 25 << 4,
             GAME_RogueCompany = GAME_UE4_25 + 1,
-            GAME_DeadIsland2 = GAME_UE4_25 + 2,
             GAME_KenaBridgeofSpirits = GAME_UE4_25 + 3,
             GAME_UE4_25_Plus = GAME_UE4_25 + 4,
         GAME_UE4_26 = GameUtils.GameUe4Base + 26 << 4,
@@ -73,7 +71,6 @@ namespace CUE4Parse.UE4.Versions
             GAME_MeetYourMaker = GAME_UE5_0 + 1,
         GAME_UE5_1 = GameUtils.GameUe5Base + 1 << 4,
         GAME_UE5_2 = GameUtils.GameUe5Base + 2 << 4,
-        GAME_UE5_3 = GameUtils.GameUe5Base + 3 << 4,
 
         GAME_UE5_LATEST = GAME_UE5_2
     }

@@ -7,7 +7,7 @@ using CUE4Parse.UE4.Exceptions;
 using CUE4Parse.UE4.Objects.Core.Serialization;
 using CUE4Parse.UE4.Readers;
 using CUE4Parse.UE4.Versions;
-using ZstdSharp;
+using Zstandard.Net;
 
 namespace CUE4Parse.MappingsProvider.Usmap
 {
@@ -79,8 +79,10 @@ namespace CUE4Parse.MappingsProvider.Usmap
                 }
                 case EUsmapCompressionMethod.ZStandard:
                 {
-                    var decompressor = new Decompressor();
-                    data = decompressor.Unwrap(Ar.ReadBytes((int) compSize), (int) decompSize).ToArray();
+                    using var compressionStream = new ZstandardStream(new MemoryStream(Ar.ReadBytes((int) compSize)) { Position = 0 }, CompressionMode.Decompress);
+                    using var memStream = new MemoryStream();
+                    compressionStream.CopyTo(memStream);
+                    data = memStream.ToArray();
                     break;
                 }
                 default:

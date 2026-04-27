@@ -3,7 +3,6 @@ using CUE4Parse.UE4.Assets.Objects;
 using CUE4Parse.UE4.Assets.Readers;
 using CUE4Parse.UE4.Objects.Core.Math;
 using CUE4Parse.Utils;
-using Newtonsoft.Json;
 
 namespace CUE4Parse.UE4.Objects.Engine.Curves
 {
@@ -31,23 +30,6 @@ namespace CUE4Parse.UE4.Objects.Engine.Curves
                     FloatCurves[i] = new FRichCurve(fallback);
                 }
             }
-
-            if (FloatCurves.Length > 0) Properties.Clear(); // Don't write these for this object
-        }
-
-        protected internal override void WriteJson(JsonWriter writer, JsonSerializer serializer)
-        {
-            base.WriteJson(writer, serializer);
-
-            writer.WritePropertyName("FloatCurves");
-            writer.WriteStartArray();
-
-            foreach (var richCurve in FloatCurves)
-            {
-                serializer.Serialize(writer, richCurve);
-            }
-
-            writer.WriteEndArray();
         }
 
         public FLinearColor GetUnadjustedLinearColorValue(float inTime)

@@ -5,14 +5,15 @@
     <LangVersion>default</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <IsPublishable>false</IsPublishable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/FabianFG/CUE4Parse</PackageProjectUrl>
     <RepositoryUrl>https://github.com/FabianFG/CUE4Parse.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>1.0.7</Version>
+    <Version>1.0.4</Version>
+	<NoWarn>8765;8601;8618;0659;0660;0661;8602;8714;8625;8604;8603;8600;0219;0612;0168;0169;1857;1903</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

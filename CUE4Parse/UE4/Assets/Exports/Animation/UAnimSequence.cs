@@ -55,7 +55,7 @@ namespace CUE4Parse.UE4.Assets.Exports.Animation
             AdditiveAnimType = GetOrDefault<EAdditiveAnimationType>(nameof(AdditiveAnimType));
             RefPoseType = GetOrDefault<EAdditiveBasePoseType>(nameof(RefPoseType));
             RefPoseSeq = GetOrDefault<ResolvedObject>(nameof(RefPoseSeq));
-            RefFrameIndex = GetOrDefault(nameof(RefFrameIndex), 0);
+            RefFrameIndex = GetOrDefault(nameof(RefFrameIndex), -1);
             RetargetSource = GetOrDefault<FName>(nameof(RetargetSource));
             RetargetSourceAssetReferencePose = GetOrDefault<FTransform[]>(nameof(RetargetSourceAssetReferencePose));
 
@@ -348,8 +348,8 @@ namespace CUE4Parse.UE4.Assets.Exports.Animation
             return RefPoseType switch
             {
                 EAdditiveBasePoseType.ABPT_RefPose => true,
-                EAdditiveBasePoseType.ABPT_AnimScaled => RefPoseSeq != null && RefPoseSeq.Name.Text != Name,
-                EAdditiveBasePoseType.ABPT_AnimFrame => RefPoseSeq != null && RefPoseSeq.Name.Text != Name && RefFrameIndex >= 0,
+                EAdditiveBasePoseType.ABPT_AnimScaled => RefPoseSeq != null,
+                EAdditiveBasePoseType.ABPT_AnimFrame => RefPoseSeq != null && RefFrameIndex >= 0,
                 EAdditiveBasePoseType.ABPT_LocalAnimFrame => RefFrameIndex >= 0,
                 _ => false
             };

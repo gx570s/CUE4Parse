@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using CUE4Parse.FileProvider.Objects;
 using CUE4Parse.MappingsProvider;
 using CUE4Parse.UE4.Assets;
 using CUE4Parse.UE4.Assets.Exports;
@@ -326,10 +325,10 @@ namespace CUE4Parse.FileProvider
         public Task<T?> TryLoadObjectAsync<T>(string? objectPath) where T : UObject;
 
         /// <summary>
-        /// Loads all objects from the Package at the passed path
+        /// Loads an object from the Package at the passed path
         /// </summary>
-        /// <param name="packagePath">The package path</param>
-        /// <returns>All objects of the package</returns>
-        public IEnumerable<UObject> LoadAllObjects(string? packagePath);
+        /// <param name="objectPath">The object path</param>
+        /// <returns>All exports of the object</returns>
+        public IEnumerable<UObject> LoadObjectExports(string? objectPath);
     }
 }

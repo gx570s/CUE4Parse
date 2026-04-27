@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CUE4Parse.UE4.Assets;
@@ -53,13 +53,6 @@ namespace CUE4Parse.UE4.Objects.UObject
             Owner = Ar.Owner;
         }
 
-        public FPackageIndex(FKismetArchive Ar)
-        {
-            Index = Ar.Read<int>();
-            Owner = Ar.Owner;
-            Ar.Index += 4;
-        }
-
         public FPackageIndex()
         {
             Index = 0;
@@ -69,18 +62,6 @@ namespace CUE4Parse.UE4.Objects.UObject
         public override string ToString()
         {
             return ResolvedObject?.ToString() ?? Index.ToString();
-        }
-
-        protected internal void WriteJson(JsonWriter writer, JsonSerializer serializer)
-        {
-            if (TryLoad<UProperty>(out var property))
-            {
-                serializer.Serialize(writer, property);
-            }
-            else
-            {
-                serializer.Serialize(writer, this);
-            }
         }
 
         #region Loading Methods

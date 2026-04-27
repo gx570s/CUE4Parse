@@ -40,7 +40,7 @@ namespace CUE4Parse.UE4.IO.Objects
             if (Header.Version < EIoStoreTocVersion.PartitionSize)
             {
                 Header.PartitionCount = 1;
-                Header.PartitionSize = ulong.MaxValue;
+                Header.PartitionSize = uint.MaxValue;
             }
 
             // Chunk IDs

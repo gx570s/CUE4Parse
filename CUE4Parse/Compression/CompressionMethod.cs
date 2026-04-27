@@ -8,7 +8,6 @@
         Custom = 3,
         Oodle = 4,
         LZ4,
-        Zstd,
         Unknown
     }
 }

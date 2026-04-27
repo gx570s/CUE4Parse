@@ -94,7 +94,6 @@ namespace CUE4Parse.UE4.Assets.Objects
                 "Vector2D" => type == ReadType.ZERO ? new FVector2D() : new FVector2D(Ar),
                 "Vector3f" => type == ReadType.ZERO ? new TIntVector3<float>() : Ar.Read<TIntVector3<float>>(), // FVector but ignore LARGE_WORLD_COORDINATES
                 "Vector4" => type == ReadType.ZERO ? new FVector4() : new FVector4(Ar),
-                "Vector4f" => type == ReadType.ZERO ? new TIntVector4<float>() : Ar.Read<TIntVector4<float>>(),
                 "Vector_NetQuantize" => type == ReadType.ZERO ? new FVector() : new FVector(Ar),
                 "Vector_NetQuantize10" => type == ReadType.ZERO ? new FVector() : new FVector(Ar),
                 "Vector_NetQuantize100" => type == ReadType.ZERO ? new FVector() : new FVector(Ar),
@@ -102,8 +101,6 @@ namespace CUE4Parse.UE4.Assets.Objects
                 "ClothLODDataCommon" => type == ReadType.ZERO ? new FClothLODDataCommon() : new FClothLODDataCommon(Ar),
                 "ClothTetherData" => type == ReadType.ZERO ? new FClothTetherData() : new FClothTetherData(Ar),
 
-                "InstancedStruct" => new FInstancedStruct(Ar),
-                
                 // FortniteGame
                 "ConnectivityCube" => new FConnectivityCube(Ar),
                 //"FortActorRecord" => new FFortActorRecord(Ar),

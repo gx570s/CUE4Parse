@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CUE4Parse.UE4.Assets.Readers;
 using CUE4Parse.UE4.Assets.Utils;
 using CUE4Parse.UE4.Exceptions;
@@ -13,7 +13,7 @@ namespace CUE4Parse.UE4.Assets.Objects
     {
         public readonly FByteBulkDataHeader Header;
         public readonly EBulkDataFlags BulkDataFlags;
-        public readonly byte[]? Data;
+        public readonly byte[] Data;
 
         public FByteBulkData(FAssetArchive Ar)
         {
@@ -82,7 +82,7 @@ namespace CUE4Parse.UE4.Assets.Objects
             }
         }
 
-        protected FByteBulkData(FAssetArchive Ar, bool skip = false)
+        public FByteBulkData(FAssetArchive Ar, bool skip = false)
         {
             Header = new FByteBulkDataHeader(Ar);
             var bulkDataFlags = Header.BulkDataFlags;

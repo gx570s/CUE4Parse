@@ -1,26 +1,10 @@
-﻿using System.Runtime.InteropServices;
-using CUE4Parse.UE4.Exceptions;
+﻿using CUE4Parse.UE4.Exceptions;
 using CUE4Parse.UE4.Objects.UObject;
 using CUE4Parse.UE4.Readers;
 using CUE4Parse.UE4.Versions;
 
 namespace CUE4Parse.UE4.IO.Objects
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public readonly struct FIoContainerHeaderLocalizedPackage
-    {
-        public readonly FPackageId SourcePackageId;
-        public readonly FMappedName SourcePackageName;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public readonly struct FIoContainerHeaderPackageRedirect
-    {
-        public readonly FPackageId SourcePackageId;
-        public readonly FPackageId TargetPackageId;
-        public readonly FMappedName SourcePackageName;
-    }
-
     public enum EIoContainerHeaderVersion // : uint
     {
         BeforeVersionWasAdded = -1, // Custom constant to indicate pre-UE5 data
@@ -36,15 +20,11 @@ namespace CUE4Parse.UE4.IO.Objects
     {
         private const int Signature = 0x496f436e;
         public FIoContainerId ContainerId;
-
+        public FNameEntrySerialized[]? ContainerNameMap;
         public FPackageId[] PackageIds;
         public FFilePackageStoreEntry[] StoreEntries;
-        public FFilePackageStoreEntry[] OptionalSegmentStoreEntries;
         public FPackageId[] OptionalSegmentPackageIds;
-
-        public FNameEntrySerialized[]? ContainerNameMap; // RedirectsNameMap
-        // public FIoContainerHeaderLocalizedPackage[]? LocalizedPackages;
-        // public FIoContainerHeaderPackageRedirect[] PackageRedirects;
+        public uint[] OptionalSegmentStoreEntries;
 
         public FIoContainerHeader(FArchive Ar)
         {
@@ -73,30 +53,26 @@ namespace CUE4Parse.UE4.IO.Objects
                 Ar.Position = continuePos;
             }
 
-            ReadPackageIdsAndEntries(Ar, out PackageIds, out StoreEntries);
+            PackageIds = Ar.ReadArray<FPackageId>(); // < OptionalSegmentPackages ? Length = PackageCount (FN 20.0)
+            var storeEntriesSize = Ar.Read<int>();
+            var storeEntriesEnd = Ar.Position + storeEntriesSize;
+            StoreEntries = Ar.ReadArray(PackageIds.Length, () => new FFilePackageStoreEntry(Ar));
+            Ar.Position = storeEntriesEnd;
 
             if (version >= EIoContainerHeaderVersion.OptionalSegmentPackages)
             {
-                ReadPackageIdsAndEntries(Ar, out OptionalSegmentPackageIds, out OptionalSegmentStoreEntries);
+                OptionalSegmentPackageIds = Ar.ReadArray<FPackageId>();
+                var optionalSegmentStoreEntriesSize = Ar.Read<int>();
+                var optionalSegmentStoreEntriesEnd = Ar.Position + optionalSegmentStoreEntriesSize;
+                OptionalSegmentStoreEntries = Ar.ReadArray<uint>(OptionalSegmentPackageIds.Length);
+                Ar.Position = optionalSegmentStoreEntriesEnd;
             }
             if (version >= EIoContainerHeaderVersion.Initial)
             {
-                ContainerNameMap = FNameEntrySerialized.LoadNameBatch(Ar);
+                ContainerNameMap = FNameEntrySerialized.LoadNameBatch(Ar); // Actual name is RedirectsNameMap
             }
-            // if (version >= EIoContainerHeaderVersion.LocalizedPackages)
-            // {
-            //     LocalizedPackages = Ar.ReadArray<FIoContainerHeaderLocalizedPackage>();
-            // }
-            // PackageRedirects = Ar.ReadArray<FIoContainerHeaderPackageRedirect>();
-        }
 
-        private void ReadPackageIdsAndEntries(FArchive Ar, out FPackageId[] packageIds, out FFilePackageStoreEntry[] storeEntries)
-        {
-            packageIds = Ar.ReadArray<FPackageId>();
-            var storeEntriesSize = Ar.Read<int>();
-            var storeEntriesEnd = Ar.Position + storeEntriesSize;
-            storeEntries = Ar.ReadArray(packageIds.Length, () => new FFilePackageStoreEntry(Ar));
-            Ar.Position = storeEntriesEnd;
+            // Skip CulturePackageMap and PackageRedirects
         }
     }
 }

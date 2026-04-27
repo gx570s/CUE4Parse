@@ -46,11 +46,11 @@ namespace CUE4Parse.UE4.Assets.Exports.Material
             new []
             {
                 "Trunk_BaseColor", "ShadedDiffuse",
-                "Background Diffuse", "BG Diffuse Texture", "Diffuse", "Diffuse_1", "DiffuseTexture", "DiffuseMap", "Diffuse A", "Diffuse A Map", "Diffuse Top", "Diffuse Side", "Base Diffuse", "Diffuse Base", "Diffuse Base Map", "Diffuse Color Map", "DiffuseLayer1",
+                "Background Diffuse", "BG Diffuse Texture", "Diffuse", "Diffuse_1", "DiffuseTexture", "DiffuseMap", "Diffuse Map", "Diffuse A", "Diffuse A Map", "Diffuse Top", "Diffuse Side", "Base_Diffuse", "Base Diffuse", "Diffuse Base", "Diffuse Base Map", "Diffuse Color Map", "DiffuseLayer1",
                 "Albedo", "ALB", "TextureAlbedo",
                 "Base Color Texture", "BaseColorTexture", "Base_Color", "Base Color", "BaseColor", "Base Texture Color", "BaseColorA", "BC", "Color", "CO", "CO_", "CO_1", "Base_CO",
                 "Tex", "Tex_Color", "TexColor", "Tex_BaseColor", "AlbedMap", "Tex_Colormap",
-                "Decal_Texture", "PetalDetailMap", "CliffTexture", "M1_T_BC", "Skin Diffuse"
+                "Decal_Texture", "PetalDetailMap", "CliffTexture", "M1_T_BC", "Skin Diffuse", "Iris Diffuse",
             },
             new []{ "Background Diffuse 2", "Diffuse_Texture_2", "DiffuseLayer2", "Diffuse B", "Diffuse B Map", "BaseColorB", "CO_2", "M2_T_BC" },
             new []{ "Background Diffuse 3", "Diffuse_Texture_3", "DiffuseLayer3", "Diffuse C", "Diffuse C Map", "BaseColorC", "CO_3", "M3_T_BC" },
@@ -64,11 +64,11 @@ namespace CUE4Parse.UE4.Assets.Exports.Material
         public static readonly string[][] Normals = {
             new []
             {
-                "Trunk_Normal",
-                "Normals", "Normal", "NormalA", "NormalTexture", "Normal Texture", "NormalMap", "Normal A Map", "T_Normal", "Normals Top", "Normals Side", "Fallback Normal",
+                "Trunk_Normal", "Skin Normal",
+                "Normals", "Normal", "NormalA", "NormalTexture", "Normal Texture", "Normal Map", "NormalMap", "Normal A Map", "T_Normal", "Normals Top", "Normals Side", "Fallback Normal",
                 "Base_Normal", "Base Normal", "Normal Base", "TextureNormal", "Tex_BakedNormal", "TexNor", "BakedNormalMap", "Base Texture Normal", "Normal Base Map",
                 "NM", "NM_1", "Base_NM", "NRM", "T_NRM", "M1_T_NRM", "Base NRM", "NRM Base",
-                "Texture A Normal", "CliffNormal", "Skin Normal"
+                "Texture A Normal", "CliffNormal", "T_Iris_N",
             },
             new []{ "Normals_Texture_2", "Texture B Normal", "NormalB", "Normal B Map", "NM_2", "M2_T_NRM" },
             new []{ "Normals_Texture_3", "Texture C Normal", "NormalC", "Normal C Map", "NM_3", "M3_T_NRM" },
@@ -82,7 +82,7 @@ namespace CUE4Parse.UE4.Assets.Exports.Material
         public static readonly string[][] SpecularMasks = {
             new []
             {
-                "Trunk_Specular", "PackedTexture",
+                "Base_SRO", "SRO Map", "Skin SRXO", "Trunk_Specular", "PackedTexture",
                 "SpecularMasks", "Specular", "SpecMap", "T_Specular", "Specular Top", "Specular Side",
                 "MG", "ORM", "MRAE", "MRAS", "MRAO", "MRA", "MRA A", "MRS", "LP", "LP_1", "Base_LP",
                 "TextureRMA", "Tex_MultiMask", "Tex_Multi", "TexMRC", "TexMRA", "TexRCN", "MultiMaskMap", "MRO Map", "MROA Map",
@@ -226,11 +226,11 @@ namespace CUE4Parse.UE4.Assets.Exports.Material
             return mapping;
         }
 
-        public bool TryGetTexture2d(out UTexture2D? texture, params string[] names)
+        public bool TryGetTexture2d(out UTexture2D? texture, string exception = null, params string[] names)
         {
             for (int i = 0; i < names.Length; i++)
             {
-                if (Textures.TryGetValue(names[i], out var unrealMaterial) && unrealMaterial is UTexture2D texture2d)
+                if (Textures.TryGetValue(names[i], out var unrealMaterial) && !unrealMaterial.Name.StartsWith(exception) && unrealMaterial is UTexture2D texture2d)
                 {
                     texture = texture2d;
                     return true;

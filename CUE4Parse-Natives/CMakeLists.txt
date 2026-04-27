@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 include_directories("${PROJECT_SOURCE_DIR}/common")
 
 # ACL
-include_directories("${PROJECT_SOURCE_DIR}/ACL/external/acl/includes")
+include_directories("${PROJECT_SOURCE_DIR}/ACL/includes")
 include_directories("${PROJECT_SOURCE_DIR}/ACL/external/acl/external/rtm/includes")
 
 add_library("${PROJECT_NAME}" SHARED ${PROJECT_SOURCE_DIR}/ACL/ACL.cpp)

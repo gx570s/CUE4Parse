@@ -30,7 +30,6 @@ namespace CUE4Parse.UE4.Assets.Exports.Texture
         public bool bRenderNearestNeighbor { get; private set; }
         public bool isNormalMap { get; private set; }
         public bool SRGB { get; private set; }
-        public TextureCompressionSettings CompressionSettings { get; private set; }
 
         public override void Deserialize(FAssetArchive Ar, long validPos)
         {
@@ -38,11 +37,11 @@ namespace CUE4Parse.UE4.Assets.Exports.Texture
             ImportedSize = GetOrDefault<FIntPoint>(nameof(ImportedSize));
             LightingGuid = GetOrDefault(nameof(LightingGuid), new FGuid((uint) GetFullName().GetHashCode()));
             SRGB = GetOrDefault(nameof(SRGB), true);
-            CompressionSettings = GetOrDefault(nameof(CompressionSettings), TextureCompressionSettings.TC_Default);
             if (TryGetValue(out FName trigger, "LODGroup", "Filter") && !trigger.IsNone)
                 bRenderNearestNeighbor = trigger.Text.EndsWith("TEXTUREGROUP_Pixels2D", StringComparison.OrdinalIgnoreCase) ||
                                          trigger.Text.EndsWith("TF_Nearest", StringComparison.OrdinalIgnoreCase);
-            isNormalMap = CompressionSettings == TextureCompressionSettings.TC_Normalmap;
+            if (TryGetValue(out FName normalTrigger, "CompressionSettings") && !normalTrigger.IsNone)
+                isNormalMap = normalTrigger.Text.EndsWith("TC_Normalmap", StringComparison.OrdinalIgnoreCase);
 
             var stripDataFlags = Ar.Read<FStripDataFlags>();
             var bCooked = Ar.Ver >= EUnrealEngineObjectUE4Version.ADD_COOKED_TO_TEXTURE2D && Ar.ReadBoolean();
@@ -125,43 +124,6 @@ namespace CUE4Parse.UE4.Assets.Exports.Texture
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public FTexture2DMipMap? GetFirstMip() => Mips.FirstOrDefault(x => x.Data.Data != null);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public FTexture2DMipMap? GetMipByMaxSize(int maxSize)
-        {
-            foreach (var mip in Mips)
-            {
-                if ((mip.SizeX <= maxSize || mip.SizeY <= maxSize) && mip.Data.Data != null)
-                    return mip;
-            }
-
-            return GetFirstMip();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public FTexture2DMipMap? GetMipBySize(int sizeX, int sizeY)
-        {
-            foreach (var mip in Mips)
-            {
-                if (mip.SizeX == sizeX && mip.SizeY == sizeY && mip.Data.Data != null)
-                    return mip;
-            }
-
-            return GetFirstMip();
-        }
-
-        private const int BitMask_CubeMap = 1 << 31;
-        private const int BitMask_HasOptData = 1 << 30;
-        private const int BitMask_NumSlices = BitMask_HasOptData - 1;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool HasOptData() => (PackedData & BitMask_HasOptData) == BitMask_HasOptData;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsCubemap() => (PackedData & BitMask_CubeMap) == BitMask_CubeMap;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetNumSlices() => PackedData & BitMask_NumSlices;
-
         public override void GetParams(CMaterialParams parameters)
         {
             // ???
@@ -208,22 +170,5 @@ namespace CUE4Parse.UE4.Assets.Exports.Texture
                 serializer.Serialize(writer, VTData);
             }
         }
-    }
-
-    public enum TextureCompressionSettings
-    {
-        TC_Default,
-        TC_Normalmap,
-        TC_Masks,
-        TC_Grayscale,
-        TC_Displacementmap,
-        TC_VectorDisplacementmap,
-        TC_HDR,
-        TC_EditorIcon,
-        TC_Alpha,
-        TC_DistanceFieldFont,
-        TC_HDR_Compressed,
-        TC_BC7,
-        TC_MAX,
     }
 }

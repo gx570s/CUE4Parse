@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CUE4Parse.UE4.Assets.Objects;
 using CUE4Parse.UE4.Assets.Readers;
 using CUE4Parse.UE4.Versions;
@@ -11,14 +11,14 @@ namespace CUE4Parse.UE4.Assets.Exports.Texture
     {
         public readonly FByteBulkData Data;
         public readonly int SizeX;
-        public int SizeY;
+        public readonly int SizeY;
         public readonly int SizeZ;
 
-        public FTexture2DMipMap(FAssetArchive Ar)
+        public FTexture2DMipMap(FAssetArchive Ar, bool skip = false)
         {
             var cooked = Ar.Ver >= EUnrealEngineObjectUE4Version.TEXTURE_SOURCE_ART_REFACTOR && Ar.Game < EGame.GAME_UE5_0 ? Ar.ReadBoolean() : Ar.IsFilterEditorOnly;
 
-            Data = new FByteBulkData(Ar);
+            Data = skip ? new FByteBulkData(Ar, skip) : new FByteBulkData(Ar);
 
             if (Ar.Game == EGame.GAME_Borderlands3)
             {

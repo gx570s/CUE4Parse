@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using CUE4Parse.FileProvider;
 using CUE4Parse.MappingsProvider;
 using CUE4Parse.UE4.Assets.Exports;
@@ -40,6 +42,7 @@ namespace CUE4Parse.UE4.Assets
             IFileProvider? provider = null, TypeMappings? mappings = null) : base(uasset.Name.SubstringBeforeLast('.'), provider, mappings)
         {
             GlobalData = globalData;
+            uasset.Versions = (VersionContainer) uasset.Versions.Clone();
             var uassetAr = new FAssetArchive(uasset, this);
 
             FExportBundleHeader[] exportBundleHeaders;
@@ -50,7 +53,7 @@ namespace CUE4Parse.UE4.Assets
             if (uassetAr.Game >= EGame.GAME_UE5_0)
             {
                 // Summary
-                var summary = new FZenPackageSummary(uassetAr);
+                var summary = uassetAr.Read<FZenPackageSummary>();
                 Summary = new FPackageFileSummary
                 {
                     PackageFlags = summary.PackageFlags,
@@ -86,31 +89,23 @@ namespace CUE4Parse.UE4.Assets
                 FFilePackageStoreEntry? storeEntry = null;
                 if (containerHeader != null)
                 {
-                    var packageId = FPackageId.FromName(Name);
-                    var storeEntryIdx = Array.IndexOf(containerHeader.PackageIds, packageId);
+                    var storeEntryIdx = Array.IndexOf(containerHeader.PackageIds, FPackageId.FromName(Name));
                     if (storeEntryIdx != -1)
                     {
                         storeEntry = containerHeader.StoreEntries[storeEntryIdx];
                     }
                     else
                     {
-                        var optionalSegmentStoreEntryIdx = Array.IndexOf(containerHeader.OptionalSegmentPackageIds, packageId);
-                        if (optionalSegmentStoreEntryIdx != -1)
-                        {
-                            storeEntry = containerHeader.OptionalSegmentStoreEntries[optionalSegmentStoreEntryIdx];
-                        }
-                        else
-                        {
-                            Log.Warning("Couldn't find store entry for package {0}, its data will not be fully read", Name);
-                        }
+                        Log.Warning("Couldn't find store entry for package {0}, its data will not be fully read", Name);
                     }
                 }
 
                 BulkDataMap = Array.Empty<FBulkDataMapEntry>();
-                if (uassetAr.Ver >= EUnrealEngineObjectUE5Version.DATA_RESOURCES)
+                if (uassetAr.Game >= EGame.GAME_UE5_2 || Summary.FileVersionUE >= EUnrealEngineObjectUE5Version.DATA_RESOURCES)
                 {
                     var bulkDataMapSize = uassetAr.Read<ulong>();
-                    BulkDataMap = uassetAr.ReadArray<FBulkDataMapEntry>((int) (bulkDataMapSize / FBulkDataMapEntry.Size));
+                    if (uassetAr.Game != EGame.GAME_UE5_2 || bulkDataMapSize < 65535) // Fortnite moment
+                        BulkDataMap = uassetAr.ReadArray<FBulkDataMapEntry>((int) (bulkDataMapSize / FBulkDataMapEntry.Size));
                 }
 
                 // Imported public export hashes
@@ -212,7 +207,7 @@ namespace CUE4Parse.UE4.Assets
                         ExportsLazy[localExportIndex] = new Lazy<UObject>(() =>
                         {
                             // Create
-                            var obj = ConstructObject(ResolveObjectIndex(export.ClassIndex)?.Object?.Value as UStruct);
+                            var obj = ConstructObject(ResolveObjectIndex(export.ClassIndex)?.Object?.Value as UStruct, export.ClassIndex);
                             obj.Name = CreateFNameFromMappedName(export.ObjectName).Text;
                             obj.Outer = (ResolveObjectIndex(export.OuterIndex) as ResolvedExportObject)?.ExportObject.Value ?? this;
                             obj.Super = ResolveObjectIndex(export.SuperIndex) as ResolvedExportObject;
@@ -310,6 +305,42 @@ namespace CUE4Parse.UE4.Assets
             return null;
         }
 
+
+        private void GetFullClassPath(FScriptObjectEntry entry, StringBuilder resultString)
+        {
+            if (entry.OuterIndex.IsNull)
+            {
+               resultString.Append(CreateFNameFromMappedName(entry.ObjectName));
+            }
+            else
+            {
+                if (GlobalData.ScriptObjectEntriesMap.TryGetValue(entry.OuterIndex, out var scriptObjectEntry))
+                {
+                    GetFullClassPath(scriptObjectEntry, resultString);
+                    resultString.Append(".");
+                    resultString.Append(CreateFNameFromMappedName(entry.ObjectName));
+                }
+            }
+        }
+
+
+        public string GetFullClassPath(FPackageObjectIndex index)
+        {
+            if (index.IsScriptImport)
+            {
+                var result = new StringBuilder(256);
+
+                if (GlobalData.ScriptObjectEntriesMap.TryGetValue(index, out var scriptObjectEntry))
+                {
+                    GetFullClassPath(scriptObjectEntry, result);
+                }
+
+                return result.ToString();
+            }
+            return "";
+
+        }
+
         public ResolvedObject? ResolveObjectIndex(FPackageObjectIndex index)
         {
             if (index.IsNull)
@@ -355,23 +386,21 @@ namespace CUE4Parse.UE4.Assets
                 {
                     foreach (var pkg in ImportedPackages.Value)
                     {
-                        if (pkg == null) continue;
-                        for (int exportIndex = 0; exportIndex < pkg.ExportMap.Length; ++exportIndex)
+                        if (pkg != null)
                         {
-                            if (pkg.ExportMap[exportIndex].GlobalImportIndex == index)
+                            for (int exportIndex = 0; exportIndex < pkg.ExportMap.Length; ++exportIndex)
                             {
-                                return new ResolvedExportObject(exportIndex, pkg);
+                                if (pkg.ExportMap[exportIndex].GlobalImportIndex == index)
+                                {
+                                    return new ResolvedExportObject(exportIndex, pkg);
+                                }
                             }
                         }
                     }
                 }
             }
 
-            if (Globals.WarnMissingImportPackage)
-            {
-                Log.Warning("Missing {0} import 0x{1:X} for package {2}", index.IsScriptImport ? "script" : "package", index.Value, Name);
-            }
-            
+            Log.Warning("Missing {0} import 0x{1:X} for package {2}", index.IsScriptImport ? "script" : "package", index.Value, Name);
             return null;
         }
 

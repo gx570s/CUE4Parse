@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using CUE4Parse.FileProvider.Objects;
 using CUE4Parse.UE4.IO.Objects;
 using CUE4Parse.Utils;
 
@@ -13,12 +12,12 @@ namespace CUE4Parse.FileProvider.Vfs
     {
         private readonly ConcurrentDictionary<FPackageId, GameFile> _byId = new ();
         public IReadOnlyDictionary<FPackageId, GameFile> byId => _byId;
-
+        
         private readonly KeyEnumerable _keys;
         private readonly ValueEnumerable _values;
         private readonly ConcurrentBag<IReadOnlyDictionary<string, GameFile>> _indicesBag = new ();
 
-        public readonly bool IsCaseInsensitive;
+        public bool IsCaseInsensitive;
         public IEnumerable<string> Keys => _keys;
         public IEnumerable<GameFile> Values => _values;
 
@@ -30,7 +29,7 @@ namespace CUE4Parse.FileProvider.Vfs
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddFiles(IReadOnlyDictionary<string, GameFile> newFiles)
+        internal void AddFiles(IReadOnlyDictionary<string, GameFile> newFiles)
         {
             foreach (var file in newFiles.Values)
             {
@@ -40,13 +39,6 @@ namespace CUE4Parse.FileProvider.Vfs
                 }
             }
             _indicesBag.Add(newFiles);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Clear()
-        {
-            _indicesBag.Clear();
-            _byId.Clear();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -78,7 +70,7 @@ namespace CUE4Parse.FileProvider.Vfs
             return false;
         }
 
-
+        
         public GameFile this[string path]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -88,11 +80,11 @@ namespace CUE4Parse.FileProvider.Vfs
                     return file;
                 if (TryGetValue(path.SubstringBeforeWithLast('.') + GameFile.Ue4PackageExtensions[1], out file))
                     return file;
-
+                
                 throw new KeyNotFoundException($"There is no game file with the path \"{path}\"");
             }
         }
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator<KeyValuePair<string, GameFile>> GetEnumerator()
         {
@@ -107,7 +99,7 @@ namespace CUE4Parse.FileProvider.Vfs
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
+        
         public int Count => _indicesBag.Sum(it => it.Count);
 
         private class KeyEnumerable : IEnumerable<string>
@@ -118,7 +110,7 @@ namespace CUE4Parse.FileProvider.Vfs
             {
                 _orig = orig;
             }
-
+            
             public IEnumerator<string> GetEnumerator()
             {
                 foreach (var index in _orig._indicesBag)
@@ -132,7 +124,7 @@ namespace CUE4Parse.FileProvider.Vfs
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
-
+        
         private class ValueEnumerable : IEnumerable<GameFile>
         {
             private readonly FileProviderDictionary _orig;
@@ -141,7 +133,7 @@ namespace CUE4Parse.FileProvider.Vfs
             {
                 _orig = orig;
             }
-
+            
             public IEnumerator<GameFile> GetEnumerator()
             {
                 foreach (var index in _orig._indicesBag)

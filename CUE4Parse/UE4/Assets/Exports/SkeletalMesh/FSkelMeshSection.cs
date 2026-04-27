@@ -233,10 +233,11 @@ namespace CUE4Parse.UE4.Assets.Exports.SkeletalMesh
             BaseIndex = Ar.Read<int>();
             NumTriangles = Ar.Read<int>();
             if (Ar.Game == EGame.GAME_Paragon) Ar.Position += 1; // bool
-            bRecomputeTangent = Ar.ReadBoolean();
+            bRecomputeTangent = Ar.Game == EGame.GAME_HogwartsLegacy ? Ar.Read<uint>() != 0 : Ar.ReadBoolean();
             RecomputeTangentsVertexMaskChannel = FRecomputeTangentCustomVersion.Get(Ar) >= FRecomputeTangentCustomVersion.Type.RecomputeTangentVertexColorMask ? Ar.Read<ESkinVertexColorChannel>() : ESkinVertexColorChannel.None;
-            bCastShadow = FEditorObjectVersion.Get(Ar) < FEditorObjectVersion.Type.RefactorMeshEditorMaterials || Ar.ReadBoolean();
-            bVisibleInRayTracing = FUE5MainStreamObjectVersion.Get(Ar) < FUE5MainStreamObjectVersion.Type.SkelMeshSectionVisibleInRayTracingFlagAdded || Ar.ReadBoolean();
+			bCastShadow = FEditorObjectVersion.Get(Ar) < FEditorObjectVersion.Type.RefactorMeshEditorMaterials || Ar.ReadBoolean();
+			bVisibleInRayTracing = FUE5MainStreamObjectVersion.Get(Ar) < FUE5MainStreamObjectVersion.Type.SkelMeshSectionVisibleInRayTracingFlagAdded || Ar.ReadBoolean();
+            if (Ar.Game == EGame.GAME_HogwartsLegacy) Ar.Position += 4;
             BaseVertexIndex = Ar.Read<uint>();
             ClothMappingDataLODs = FUE5ReleaseStreamObjectVersion.Get(Ar) < FUE5ReleaseStreamObjectVersion.Type.AddClothMappingLODBias ? new[] { Ar.ReadArray(() => new FMeshToMeshVertData(Ar)) } : Ar.ReadArray(() => Ar.ReadArray(() => new FMeshToMeshVertData(Ar)));
             BoneMap = Ar.ReadArray<ushort>();

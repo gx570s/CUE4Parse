@@ -8,11 +8,6 @@ namespace CUE4Parse.UE4.Assets.Exports.Material.Parameters
     {
         public FMaterialLayersFunctions? Value;
 
-        public FStaticMaterialLayersParameter()
-        {
-
-        }
-
         public FStaticMaterialLayersParameter(FArchive Ar)
         {
             ParameterInfo = new FMaterialParameterInfo(Ar);
